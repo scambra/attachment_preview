@@ -224,6 +224,7 @@ class AttachmentPreviewPlugin extends Plugin {
    * @return int
    */
   private function unFormatSize($formatted_size) {
+    $formatted_size = preg_replace('/.*\(([^)]*)\)/', '\1', $formatted_size); 
     $from = array(
       'bytes' => function ($value) {
         return $value;
