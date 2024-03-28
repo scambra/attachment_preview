@@ -286,7 +286,7 @@ class AttachmentPreviewPlugin extends Plugin {
     $rewrite_youtube = (bool) $config->get('attach-youtube');
     $size_limit = (int) $config->get('attachment-size');
     // Find all <a> elements: http://stackoverflow.com/a/29272222 as DOMElement's
-    foreach ($dom->getElementsByTagName('a') as $link) {
+    foreach ($xpath->query('//a[contains(concat(" ", normalize-space(@class), " "), " filename ")]') as $link) {
       // All links.. could be messy
       $this->debug_log("Saw link: %s", $link->textContent);
       $links_seen++;
@@ -335,17 +335,17 @@ class AttachmentPreviewPlugin extends Plugin {
           $attachments_inlined++;
         }
       }
-      elseif ($rewrite_youtube) {
-        // This link isn't to /file.php & admin have asked us to check if it is a youtube link.
-        // The overhead of checking strpos on every URL is less than the overhead of checking for a youtube ID!
-        if (strpos($link->getAttribute('href'), 'youtub') !== FALSE) {
-          try {
-            $this->add_youtube($dom, $link);
-          } catch (Exception $e) {
-            $this->log("Exception encountered injecting Youtube player");
-          }
-          $attachments_inlined++;
+    }
+    if ($rewrite_youtube) {
+      // This link isn't to /file.php & admin have asked us to check if it is a youtube link.
+      // The overhead of checking strpos on every URL is less than the overhead of checking for a youtube ID!
+      foreach ($xpath->query('//a[contains(@href, "youtub")]') as $link) {
+        try {
+          $this->add_youtube($dom, $link);
+        } catch (Exception $e) {
+          $this->log("Exception encountered injecting Youtube player");
         }
+        $attachments_inlined++;
       }
     }
 
